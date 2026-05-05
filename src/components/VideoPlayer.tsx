@@ -1,10 +1,61 @@
 import type { AdMode } from '@/types'
-import { Play, Pause, SkipForward, SkipBack, Volume2, Maximize, Settings } from 'lucide-react'
+import { Play, SkipForward, SkipBack, Volume2, Maximize, Settings, Cpu, Activity, Radio } from 'lucide-react'
 
 interface VideoPlayerProps {
   mode: AdMode
   showAdBubble: boolean
   countdown: number
+}
+
+function AudioWaveform() {
+  const bars = [
+    { h: 60, d: 0.6 },
+    { h: 85, d: 1.2 },
+    { h: 40, d: 0.4 },
+    { h: 95, d: 0.8 },
+    { h: 55, d: 1.5 },
+    { h: 75, d: 0.7 },
+    { h: 45, d: 1.1 },
+    { h: 90, d: 0.5 },
+    { h: 65, d: 1.3 },
+    { h: 80, d: 0.9 },
+    { h: 35, d: 0.6 },
+    { h: 70, d: 1.0 },
+    { h: 50, d: 0.4 },
+    { h: 88, d: 1.4 },
+    { h: 42, d: 0.7 },
+    { h: 78, d: 1.2 },
+    { h: 58, d: 0.5 },
+    { h: 92, d: 0.9 },
+    { h: 48, d: 1.1 },
+    { h: 72, d: 0.8 },
+    { h: 38, d: 1.3 },
+    { h: 82, d: 0.6 },
+    { h: 52, d: 1.0 },
+    { h: 68, d: 0.4 },
+  ]
+
+  return (
+    <div className="flex items-end gap-[2px] h-32">
+      {bars.map((bar, i) => (
+        <div
+          key={i}
+          className="w-1.5 rounded-t-sm"
+          style={{
+            height: `${bar.h}%`,
+            transformOrigin: 'bottom',
+            background: i % 3 === 0
+              ? 'linear-gradient(to top, rgba(0,229,255,0.2), rgba(0,229,255,0.9))'
+              : i % 3 === 1
+                ? 'linear-gradient(to top, rgba(139,92,246,0.2), rgba(139,92,246,0.7))'
+                : 'linear-gradient(to top, rgba(34,197,94,0.2), rgba(34,197,94,0.6))',
+            animation: `waveformPulse ${bar.d}s ease-in-out infinite alternate`,
+            animationDelay: `${i * 40}ms`,
+          }}
+        />
+      ))}
+    </div>
+  )
 }
 
 export default function VideoPlayer({ mode, showAdBubble, countdown }: VideoPlayerProps) {
@@ -15,7 +66,6 @@ export default function VideoPlayer({ mode, showAdBubble, countdown }: VideoPlay
       {/* Scene Background */}
       <div className="absolute inset-0">
         {isTraditional ? (
-          /* Traditional: Black screen with ad */
           <div className="w-full h-full bg-gradient-to-b from-zinc-900 via-black to-zinc-900 flex flex-col items-center justify-center gap-6">
             <div className="text-6xl font-black text-red-500/80 animate-pulse tracking-widest">
               AD
@@ -38,106 +88,98 @@ export default function VideoPlayer({ mode, showAdBubble, countdown }: VideoPlay
             </div>
           </div>
         ) : (
-          /* AI Mode: Scene with characters toasting */
-          <div className="w-full h-full relative overflow-hidden">
-            {/* Night Sky / Atmosphere */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a1a] via-[#0d1117] to-[#161b22]" />
+          <div className="w-full h-full relative overflow-hidden bg-[#02040a]">
+            {/* Deep background with subtle gradient */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,229,255,0.04)_0%,transparent_70%)]" />
 
-            {/* Stars / Particles */}
-            <div className="absolute inset-0 opacity-30">
-              {Array.from({ length: 20 }, (_, i) => (
-                <div
-                  key={i}
-                  className="absolute w-1 h-1 bg-white rounded-full"
-                  style={{
-                    left: `${Math.random() * 100}%`,
-                    top: `${Math.random() * 50}%`,
-                    animationDelay: `${Math.random() * 3}s`,
-                    animation: 'pulse 3s ease-in-out infinite',
-                  }}
-                />
-              ))}
-            </div>
+            {/* Hex grid overlay */}
+            <div
+              className="absolute inset-0 opacity-[0.04]"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%2300e5ff' stroke-width='0.5'%3E%3Cpath d='M10 5 L20 0 L30 5 L30 15 L20 20 L10 15 Z'/%3E%3Cpath d='M10 25 L20 20 L30 25 L30 35 L20 40 L10 35 Z'/%3E%3C/g%3E%3C/svg%3E")`,
+                backgroundSize: '80px 80px',
+              }}
+            />
 
-            {/* Moon / Light Source */}
-            <div className="absolute top-8 right-16 w-20 h-20 rounded-full bg-gradient-to-b from-yellow-100/20 to-transparent blur-xl" />
-            <div className="absolute top-10 right-20 w-12 h-12 rounded-full bg-yellow-100/40" />
+            {/* Grid lines */}
+            <div
+              className="absolute inset-0 opacity-[0.03]"
+              style={{
+                backgroundImage: `
+                  linear-gradient(rgba(0,229,255,0.5) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(0,229,255,0.5) 1px, transparent 1px)
+                `,
+                backgroundSize: '40px 40px',
+              }}
+            />
 
-            {/* Table */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[85%] h-[30%] bg-gradient-to-t from-amber-900/40 to-amber-800/20 rounded-t-3xl border-t border-amber-700/30" />
+            {/* Audio Waveform - Center */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+              <AudioWaveform />
 
-            {/* Character 1 - Left (范闲) */}
-            <div className="absolute left-[20%] bottom-[28%] flex flex-col items-center">
-              {/* Body */}
-              <div className="w-16 h-28 bg-gradient-to-b from-slate-700 via-slate-600 to-slate-800 rounded-t-2xl relative">
-                {/* Robe collar detail */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-8 bg-gradient-to-b from-cyan-800 to-slate-700 rounded-b-lg" />
-                {/* Arm raising cup */}
-                <div className="absolute -right-8 top-8 w-8 h-16 bg-gradient-to-r from-slate-600 to-slate-500 rounded-full origin-bottom rotate-[-30deg]">
-                  {/* Hand */}
-                  <div className="absolute -right-2 top-0 w-6 h-6 bg-amber-200/80 rounded-full" />
-                  {/* Cup */}
-                  <div className="absolute -right-3 -top-4 w-7 h-5 bg-gradient-to-b from-amber-300/60 to-amber-500/40 rounded-md border border-amber-400/30" />
+              {/* Data stream text overlay */}
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex items-center gap-2 text-cyan-400/80 font-mono text-xs tracking-widest">
+                  <Radio size={14} className="animate-pulse" />
+                  LIVE STREAM DECODED
+                  <span className="inline-block w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                </div>
+                <div className="text-cyan-500/50 font-mono text-[10px] tracking-[0.2em]">
+                  TX_VIDEO_CHANNEL_01 :: PROTOCOL v3.2.1
                 </div>
               </div>
-              {/* Head */}
-              <div className="w-10 h-10 bg-amber-200/80 rounded-full -mt-1 relative">
-                {/* Hair */}
-                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-12 h-5 bg-slate-900 rounded-t-full" />
+
+              {/* Data rate indicator */}
+              <div className="flex items-center gap-3 text-zinc-600 font-mono text-[10px]">
+                <Activity size={12} className="text-cyan-500/60" />
+                <span>BITRATE: 15.6 Mbps</span>
+                <span className="text-zinc-800">|</span>
+                <span>FPS: 29.97</span>
+                <span className="text-zinc-800">|</span>
+                <span>CODEC: H.265</span>
               </div>
             </div>
 
-            {/* Character 2 - Right (举杯人物) */}
-            <div className="absolute right-[22%] bottom-[28%] flex flex-col items-center">
-              {/* Body */}
-              <div className="w-14 h-26 bg-gradient-to-b from-red-900 via-red-800 to-red-950 rounded-t-2xl relative">
-                {/* Robe detail */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-8 bg-gradient-to-b from-amber-700 to-red-800 rounded-b-lg" />
-                {/* Arm raising cup */}
-                <div className="absolute -left-8 top-10 w-7 h-14 bg-gradient-to-l from-red-700 to-red-600 rounded-full origin-bottom rotate-[25deg]">
-                  {/* Hand */}
-                  <div className="absolute -left-1 top-0 w-5 h-5 bg-amber-200/80 rounded-full" />
-                  {/* Cup */}
-                  <div className="absolute -left-2 -top-3 w-6 h-4 bg-gradient-to-b from-amber-300/60 to-amber-500/40 rounded-md border border-amber-400/30" />
-                </div>
+            {/* Floating data hex particles */}
+            {Array.from({ length: 6 }, (_, i) => (
+              <div
+                key={i}
+                className="absolute font-mono text-xs text-cyan-500/20"
+                style={{
+                  left: `${10 + Math.random() * 80}%`,
+                  top: `${10 + Math.random() * 80}%`,
+                  animation: `fadeIn 2s ease-out ${i * 0.3}s infinite alternate`,
+                }}
+              >
+                {`0x${Math.floor(Math.random() * 0xFFFF).toString(16).toUpperCase()}`}
               </div>
-              {/* Head */}
-              <div className="w-9 h-9 bg-amber-200/80 rounded-full -mt-1 relative">
-                {/* Hair / Crown */}
-                <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-10 h-6 bg-slate-800 rounded-t-full" />
-              </div>
-            </div>
+            ))}
 
-            {/* Table items - dishes */}
-            <div className="absolute bottom-[26%] left-[35%] w-7 h-3 bg-amber-700/50 rounded-full" />
-            <div className="absolute bottom-[26%] left-[52%] w-5 h-3 bg-amber-700/50 rounded-full" />
-            <div className="absolute bottom-[26%] right-[38%] w-6 h-2 bg-red-800/50 rounded-full" />
-
-            {/* Warm ambient light */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[60%] h-[40%] bg-gradient-to-t from-amber-600/10 to-transparent rounded-full blur-3xl" />
-
-            {/* Lanterns */}
-            <div className="absolute top-12 left-[25%] w-4 h-6 bg-red-500/30 rounded-full blur-sm" />
-            <div className="absolute top-14 right-[28%] w-4 h-6 bg-red-500/30 rounded-full blur-sm" />
+            {/* Subtle corner glows */}
+            <div className="absolute -top-20 -left-20 w-80 h-80 bg-cyan-500/[0.03] rounded-full blur-[100px]" />
+            <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-purple-500/[0.03] rounded-full blur-[100px]" />
 
             {/* Scanline effect overlay */}
-            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-white/[0.015] to-transparent animate-scan-line" />
+            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-white/[0.01] to-transparent animate-scan-line" />
 
             {/* Vignette */}
-            <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.5)_100%)]" />
+            <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.6)_100%)]" />
+
+            {/* Corner tech decoration */}
+            <div className="absolute top-0 left-0 w-16 h-16 border-l border-t border-cyan-500/20 rounded-tl-xl pointer-events-none">
+              <div className="absolute top-1.5 left-1.5 w-2 h-2 bg-cyan-400/40 rounded-full" />
+            </div>
+            <div className="absolute top-0 right-0 w-16 h-16 border-r border-t border-cyan-500/20 rounded-tr-xl pointer-events-none">
+              <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-cyan-400/40 rounded-full" />
+            </div>
+            <div className="absolute bottom-0 left-0 w-16 h-16 border-l border-b border-cyan-500/20 rounded-bl-xl pointer-events-none" />
+            <div className="absolute bottom-0 right-0 w-16 h-16 border-r border-b border-cyan-500/20 rounded-br-xl pointer-events-none" />
           </div>
         )}
       </div>
 
-      {/* Subtitles */}
-      {!isTraditional && (
-        <div className="absolute bottom-[14%] left-1/2 -translate-x-1/2 text-white text-lg font-medium drop-shadow-lg text-center px-4 py-1 bg-black/40 rounded">
-          来，干杯！今日不醉不归——
-        </div>
-      )}
-
       {/* Video Player Controls (Decorative) */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <div className="flex items-center gap-3">
           <button className="text-white/80 hover:text-white transition-colors">
             <SkipBack size={16} />
@@ -173,14 +215,15 @@ export default function VideoPlayer({ mode, showAdBubble, countdown }: VideoPlay
 
       {/* Corner badges */}
       <div className="absolute top-3 left-3 flex items-center gap-2">
-        <span className="px-2 py-0.5 bg-black/60 rounded text-[10px] text-zinc-400 font-mono border border-zinc-700/50">
+        <span className="px-2 py-0.5 bg-black/60 backdrop-blur-sm rounded text-[10px] text-zinc-400 font-mono border border-zinc-700/50 flex items-center gap-1">
+          <Cpu size={10} className="text-cyan-400" />
           {isTraditional ? 'AD INSERTION' : 'AI NATIVE'}
         </span>
-        <span className="px-2 py-0.5 bg-black/60 rounded text-[10px] text-zinc-500 font-mono border border-zinc-700/50">
+        <span className="px-2 py-0.5 bg-black/60 backdrop-blur-sm rounded text-[10px] text-zinc-500 font-mono border border-zinc-700/50">
           1080P · 臻彩
         </span>
       </div>
-      <div className="absolute top-3 right-3 px-2 py-0.5 bg-black/60 rounded text-[10px] text-zinc-500 font-mono border border-zinc-700/50">
+      <div className="absolute top-3 right-3 px-2 py-0.5 bg-black/60 backdrop-blur-sm rounded text-[10px] text-zinc-500 font-mono border border-zinc-700/50">
         00:14:32 / 00:41:08
       </div>
     </div>
