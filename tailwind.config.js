@@ -12,6 +12,8 @@ export default {
       animation: {
         'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
         'fade-in': 'fadeIn 0.6s ease-out forwards',
+        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+        'fade-in-right': 'fadeInRight 0.6s ease-out forwards',
         'bounce-in': 'bounceIn 0.6s ease-out forwards',
         'blink': 'blink 1s step-end infinite',
         'scan-line': 'scanLine 8s linear infinite',
@@ -25,6 +27,14 @@ export default {
           '0%': { opacity: '0', transform: 'scale(0.8) translateY(10px)' },
           '60%': { opacity: '1', transform: 'scale(1.05) translateY(-3px)' },
           '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+        },
+        fadeInUp: {
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeInRight: {
+          '0%': { opacity: '0', transform: 'translateX(40px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
         },
         bounceIn: {
           '0%': { opacity: '0', transform: 'scale(0.3)' },

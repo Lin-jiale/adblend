@@ -14,6 +14,7 @@ export interface DanmakuItem {
   speed: number
   top: number
   delay: number
+  color?: string
 }
 
 export interface AdBubbleInfo {

@@ -7,6 +7,7 @@ interface TerminalProps {
   mode: AdMode
   onAdTriggered: () => void
   resetKey: number
+  videoLogs: LogEntry[]
 }
 
 function getPrefixColor(prefix: string): string {
@@ -16,10 +17,11 @@ function getPrefixColor(prefix: string): string {
   if (prefix.includes('Ad Matcher')) return 'text-yellow-400'
   if (prefix.includes('Renderer')) return 'text-orange-400'
   if (prefix.includes('Pipeline')) return 'text-blue-400'
+  if (prefix.includes('Subtitle')) return 'text-purple-400'
   return 'text-zinc-400'
 }
 
-export default function Terminal({ mode, onAdTriggered, resetKey }: TerminalProps) {
+export default function Terminal({ mode, onAdTriggered, resetKey, videoLogs }: TerminalProps) {
   const [visibleLogs, setVisibleLogs] = useState<LogEntry[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isTyping, setIsTyping] = useState(false)
@@ -76,7 +78,7 @@ export default function Terminal({ mode, onAdTriggered, resetKey }: TerminalProp
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight
     }
-  }, [visibleLogs, displayedText])
+  }, [visibleLogs, displayedText, videoLogs])
 
   if (mode === 'traditional') {
     return (
@@ -150,6 +152,21 @@ export default function Terminal({ mode, onAdTriggered, resetKey }: TerminalProp
           </div>
         ))}
 
+        {/* Video-driven logs */}
+        {videoLogs.map((entry) => (
+          <div
+            key={entry.id}
+            className="flex gap-2 animate-fade-in-up"
+          >
+            <span className={`shrink-0 ${getPrefixColor(entry.prefix)} font-semibold`}>
+              {entry.prefix}
+            </span>
+            <span className="text-zinc-300">
+              {entry.message}
+            </span>
+          </div>
+        ))}
+
         {/* Current typing line */}
         {isTyping && mode === 'ai' && currentIndex < terminalLogs.length && (
           <div className="flex gap-2">
@@ -166,10 +183,10 @@ export default function Terminal({ mode, onAdTriggered, resetKey }: TerminalProp
         {/* Completion indicator */}
         {currentIndex >= terminalLogs.length && !isTyping && (
           <div className="text-green-400 mt-3">
-            <span className="text-green-400">┌─</span> Analysis Pipeline Complete{' '}
-            <span className="text-green-400">──────────────────────</span>
+            <span className="text-green-400">┌─</span> Engine Standing By{' '}
+            <span className="text-green-400">────────────────────────────────</span>
             <br />
-            <span className="text-green-400">└─</span> Waiting for next frame batch...
+            <span className="text-green-400">└─</span> Listening for timeline events...
             <span className="inline-block w-2 h-3.5 bg-green-400 ml-1 animate-blink align-middle" />
           </div>
         )}
