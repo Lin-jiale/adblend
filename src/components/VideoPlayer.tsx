@@ -54,7 +54,7 @@ export default function VideoPlayer({ mode, countdown, onTimeUpdate }: VideoPlay
           <video
             ref={videoRef}
             className="w-full h-full object-cover"
-            src="/bandicam 2026-05-06 12-38-17-669.mp4"
+            src={`${import.meta.env.BASE_URL}video.mp4`}
             onTimeUpdate={handleTimeUpdate}
             controls
             muted
