@@ -16,7 +16,6 @@ export default function VideoPlayer({
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
 
-  // 场景切换：重置进度并自动播放
   useEffect(() => {
     const el = videoRef.current
     if (!el) return
@@ -24,7 +23,6 @@ export default function VideoPlayer({
     el.play().catch(() => {})
   }, [scene])
 
-  // H5 拉起时自动暂停，关闭时不自动播放
   useEffect(() => {
     const el = videoRef.current
     if (!el) return
@@ -42,7 +40,7 @@ export default function VideoPlayer({
   return (
     <div
       className={`relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-zinc-800 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${
-        isH5Open ? 'scale-[0.85] -translate-y-12 rounded-2xl shadow-2xl' : ''
+        isH5Open ? 'scale-[0.85] -translate-y-8 rounded-2xl shadow-2xl' : ''
       }`}
     >
       <video

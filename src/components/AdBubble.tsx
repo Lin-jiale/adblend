@@ -16,22 +16,25 @@ interface AdBubbleProps {
   adConfig: AdConfig
   onOpenH5Modal: (adConfig: AdConfig) => void
   onClose: () => void
+  injectLiveLog?: (text: string) => void
 }
 
-export default function AdBubble({ adConfig, onOpenH5Modal, onClose }: AdBubbleProps) {
-  const [shouldRender, setShouldRender] = useState(false)
+export default function AdBubble({ adConfig, onOpenH5Modal, onClose, injectLiveLog }: AdBubbleProps) {
   const [animated, setAnimated] = useState(false)
   const [canClose, setCanClose] = useState(false)
   const [closing, setClosing] = useState(false)
-  const exposureRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [countdown, setCountdown] = useState(5)
+  const [bounce, setBounce] = useState(false)
+
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
+
+  const isClickedRef = useRef(false)
+  const hasLoggedRef = useRef(false)
 
   const isImage = adConfig.type === 'image'
 
   useEffect(() => {
-    setShouldRender(true)
-    setCanClose(false)
-    setClosing(false)
     const t = requestAnimationFrame(() => {
       requestAnimationFrame(() => setAnimated(true))
     })
@@ -39,22 +42,37 @@ export default function AdBubble({ adConfig, onOpenH5Modal, onClose }: AdBubbleP
   }, [])
 
   useEffect(() => {
-    if (shouldRender && animated && !canClose && !closing) {
-      exposureRef.current = setTimeout(() => setCanClose(true), 5000)
-    }
-    return () => {
-      if (exposureRef.current) {
-        clearTimeout(exposureRef.current)
-        exposureRef.current = null
-      }
-    }
-  }, [shouldRender, animated, canClose, closing])
+    const id = setTimeout(() => setBounce(true), 3000)
+    return () => clearTimeout(id)
+  }, [])
 
   useEffect(() => {
+    if (hasLoggedRef.current) return
+
+    let tick = 5
+    setCountdown(tick)
+
+    intervalRef.current = setInterval(() => {
+      tick -= 1
+      setCountdown(tick)
+
+      if (tick <= 0) {
+        if (intervalRef.current) clearInterval(intervalRef.current)
+        setCanClose(true)
+
+        if (!isClickedRef.current && !hasLoggedRef.current) {
+          if (injectLiveLog) {
+            injectLiveLog('[Tracking] Effective Viewable Impression (>5s) verified. Component unlocked.')
+          }
+          hasLoggedRef.current = true
+        }
+      }
+    }, 1000)
+
     return () => {
-      if (exposureRef.current) clearTimeout(exposureRef.current)
+      if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [])
+  }, [injectLiveLog])
 
   const doClose = useCallback(() => {
     if (closing) return
@@ -68,10 +86,22 @@ export default function AdBubble({ adConfig, onOpenH5Modal, onClose }: AdBubbleP
     (e: React.MouseEvent) => {
       e.stopPropagation()
       e.preventDefault()
+
+      isClickedRef.current = true
+
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+
+      if (injectLiveLog) {
+        injectLiveLog('[User Action] Click_Event captured. User engaged with IP_Hook. Seamless Funnel Active... 🚀')
+      }
+
       onOpenH5Modal(adConfig)
       doClose()
     },
-    [adConfig, onOpenH5Modal, doClose],
+    [adConfig, onOpenH5Modal, doClose, injectLiveLog],
   )
 
   const handleVideoEnded = useCallback(() => {
@@ -88,7 +118,14 @@ export default function AdBubble({ adConfig, onOpenH5Modal, onClose }: AdBubbleP
             : 'translate-x-16 opacity-0 scale-90'
         }`}
       >
-        <div className="relative rounded-2xl shadow-2xl w-72 overflow-hidden backdrop-blur-md bg-black/60 border border-white/10">
+        <div className={`relative rounded-2xl shadow-2xl w-72 overflow-hidden backdrop-blur-md bg-black/60 border border-white/10 ${bounce && !closing ? 'animate-bounce-short' : ''}`}>
+          {/* 稀缺感标签 */}
+          <div className="absolute top-3 right-3 z-10">
+            <span className="backdrop-blur-md bg-amber-500/90 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-lg">
+              {isImage ? '剧迷特权' : '限时联名'}
+            </span>
+          </div>
+
           {isImage ? (
             <img
               className="w-full aspect-video object-cover"
@@ -122,11 +159,24 @@ export default function AdBubble({ adConfig, onOpenH5Modal, onClose }: AdBubbleP
         </div>
       </div>
 
+      {/* 倒计时圆环 */}
+      {!canClose && !closing && (
+        <div className="absolute -top-2 -right-2 z-[55] w-6 h-6 bg-black/70 rounded-full flex items-center justify-center border border-white/20 backdrop-blur-md shadow-lg">
+          <span className="text-[10px] text-white font-mono font-bold">{countdown}</span>
+        </div>
+      )}
+
       {canClose && !closing && (
         <button
           onClick={(e) => {
             e.stopPropagation()
             e.preventDefault()
+
+            isClickedRef.current = true
+            if (injectLiveLog) {
+              injectLiveLog('[User Action] Dismiss_Event captured. Ad dismissed manually by user.')
+              injectLiveLog('[Pipeline] Ad lifecycle ended. Initiating scene cooldown period (600s).')
+            }
             doClose()
           }}
           className="absolute -top-2 -right-2 z-[55] w-6 h-6 bg-zinc-700/90 hover:bg-red-500/80 rounded-full flex items-center justify-center border border-zinc-500/30 backdrop-blur-sm transition-all duration-300 animate-fade-in-up"

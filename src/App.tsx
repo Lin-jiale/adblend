@@ -5,6 +5,7 @@ import TogglePanel from '@/components/TogglePanel'
 import VideoPlayer from '@/components/VideoPlayer'
 import TerminalPanel from '@/components/TerminalPanel'
 import DanmakuLayer from '@/components/DanmakuLayer'
+import LiveTagOverlay from '@/components/LiveTagOverlay'
 import AdBubble from '@/components/AdBubble'
 import H5Modal from '@/components/H5Modal'
 
@@ -19,11 +20,11 @@ export default function App() {
   const triggeredRef = useRef<Set<number>>(new Set())
   const adTriggeredRef = useRef(false)
   const prevTimeRef = useRef(0)
+  const timeRef = useRef(0)
 
   const sceneData = mockData[currentScene]
-  const { logs, adTriggerTime, ad, mainVideoUrl, danmaku, title } = sceneData
+  const { logs, adTriggerTime, ad, mainVideoUrl, danmaku, liveTags, title } = sceneData
 
-  // ── 场景切换：全量重置 ──
   const handleSceneChange = useCallback((scene: Scene) => {
     setCurrentScene(scene)
     setCurrentTime(0)
@@ -34,13 +35,14 @@ export default function App() {
     triggeredRef.current.clear()
     adTriggeredRef.current = false
     prevTimeRef.current = 0
+    timeRef.current = 0
   }, [])
 
-  // ── VideoSync Engine ──
   const handleTimeUpdate = useCallback(
     (time: number) => {
       const prevTime = prevTimeRef.current
       prevTimeRef.current = time
+      timeRef.current = time
       setCurrentTime(time)
 
       if (Math.abs(time - prevTime) > 1.5) {
@@ -67,12 +69,15 @@ export default function App() {
     [logs, adTriggerTime],
   )
 
-  // ── 广告气泡关闭回调 ──
+  const injectLiveLog = useCallback((text: string) => {
+    const t = Math.floor(timeRef.current)
+    setDisplayedLogs((prev) => [...prev, { time: t, text }])
+  }, [])
+
   const handleAdClose = useCallback(() => {
     setShowAd(false)
   }, [])
 
-  // ── 拉起半屏 H5 转化面板 ──
   const handleOpenH5Modal = useCallback((adConfig: AdConfig) => {
     setH5ModalAd(adConfig)
     setH5ModalOpen(true)
@@ -82,11 +87,12 @@ export default function App() {
   const handleCloseH5 = useCallback(() => {
     setH5ModalOpen(false)
     setH5ModalAd(null)
-  }, [])
+    injectLiveLog('[Pipeline] Funnel closed. Re-engaging full-screen video context.')
+    injectLiveLog('[Pipeline] Ad lifecycle ended. Initiating scene cooldown period (600s).')
+  }, [injectLiveLog])
 
   return (
     <div className="min-h-screen bg-[#050508] text-white flex flex-col">
-      {/* 背景纹理 */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div
           className="absolute inset-0 opacity-[0.03]"
@@ -96,7 +102,6 @@ export default function App() {
         />
       </div>
 
-      {/* 页头 */}
       <header className="relative z-10 px-6 py-3.5 flex items-center justify-between border-b border-zinc-800/50 bg-[#050508]/80 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
@@ -114,15 +119,12 @@ export default function App() {
         </div>
       </header>
 
-      {/* 场景切换器 */}
       <div className="relative z-10 px-6 pt-4 pb-2 flex justify-center">
         <TogglePanel currentScene={currentScene} onChange={handleSceneChange} />
       </div>
 
-      {/* 主区域 60/40 */}
       <main className="relative z-10 flex-1 px-4 sm:px-6 pb-6">
         <div className="flex flex-col lg:flex-row gap-4 max-w-[1600px] mx-auto h-[calc(100vh-180px)] min-h-[500px]">
-          {/* 左 60% */}
           <div className="flex-1 lg:w-[60%] relative flex flex-col">
             <div className="relative flex-1 rounded-xl overflow-hidden border border-zinc-800/50 shadow-[0_0_60px_rgba(0,229,255,0.03)]">
               <VideoPlayer
@@ -132,6 +134,7 @@ export default function App() {
                 isH5Open={h5ModalOpen}
                 onTimeUpdate={handleTimeUpdate}
               />
+              <LiveTagOverlay currentTime={currentTime} liveTags={liveTags} />
               <DanmakuLayer currentTime={currentTime} danmakuItems={danmaku} />
               {showAd && (
                 <AdBubble
@@ -139,11 +142,14 @@ export default function App() {
                   adConfig={ad}
                   onOpenH5Modal={handleOpenH5Modal}
                   onClose={handleAdClose}
+                  injectLiveLog={injectLiveLog}
                 />
               )}
-              {/* 半屏 H5 转化面板 */}
               {h5ModalOpen && h5ModalAd && (
-                <H5Modal adConfig={h5ModalAd} onClose={handleCloseH5} />
+                <H5Modal
+                  adConfig={h5ModalAd}
+                  onClose={handleCloseH5}
+                />
               )}
             </div>
             <div className="mt-2 flex items-center gap-3 px-1">
@@ -156,14 +162,12 @@ export default function App() {
             </div>
           </div>
 
-          {/* 右 40% */}
           <div className="lg:w-[40%] h-[300px] lg:h-auto">
             <TerminalPanel scene={currentScene} logs={displayedLogs} />
           </div>
         </div>
       </main>
 
-      {/* 页脚 */}
       <footer className="relative z-10 px-6 py-2.5 border-t border-zinc-800/50 flex items-center justify-between text-[10px] text-zinc-700 font-mono">
         <span>© 2026 AdBlend · Tencent PCG Campus AI Innovation Contest</span>
         <span>Designed for Demo Only</span>
