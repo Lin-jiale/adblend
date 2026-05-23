@@ -109,13 +109,13 @@ export default function AdBubble({ adConfig, onOpenH5Modal, onClose, injectLiveL
   }, [doClose])
 
   return (
-    <div className="absolute right-4 top-1/2 -translate-y-1/2 z-50">
+    <div className="absolute right-4 top-10 z-50">
       <div
         onClick={handleClick}
         className={`transition-all duration-500 transform cursor-pointer ${
           animated && !closing
-            ? 'translate-x-0 opacity-100 scale-100'
-            : 'translate-x-16 opacity-0 scale-90'
+            ? 'translate-y-0 opacity-100 scale-100'
+            : '-translate-y-4 opacity-0 scale-90'
         }`}
       >
         <div className={`relative rounded-2xl shadow-2xl w-72 overflow-hidden backdrop-blur-md bg-black/60 border border-white/10 ${bounce && !closing ? 'animate-bounce-short' : ''}`}>
